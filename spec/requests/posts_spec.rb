@@ -51,17 +51,47 @@ end
     end
 
      context 'when the request is invalid' do
-      before {post '/posts', params: {post: { content:'my content'}}}
-      #  it 'is invalid post without a title' do
-      #   expect(post).to be_invalid
-      #  end
+      before {post '/posts', params: {post: { title: nil, content:'my content'}}}
 
-       it 'return status code 422' do
+       it 'shold include appropriate HTTP status code' do
         expect(response). to have_http_status(422)
        end
-      end
-    end
+
+       it 'should include appropriate error messages response' do 
+        expect(json['title']).to include("can't be blank")
+  
+       end
+
+      end 
+
   end
+end
+describe 'PUT /posts/:id' do
+  let!(:post) {create (:post)}
+
+  context 'when the request is valid' do
+    before { put "/posts/#{post.id}", params: { post: {title: 'Updated title', content: 'Updated content'}}}
+
+    it 'update the post' do
+      expect(json['title']).to eq('Updated title')
+      expect(json['content']).to eq('Updated content')
+    end
+
+    it 'returns HTTP status 200' do
+      expect(response).to have_http_status(200)
+    end
+
+  end
+end
+
+describe 'DELETE /posts/:id' do
+  let!(:post) {create(:post)}
+  before {delete "/posts/#{post.id}"}
+
+  it 'returns status code 204' do
+    expect(response).to have_http_status(204)
+  end
+end
 
     def json
       JSON.parse(response.body)
